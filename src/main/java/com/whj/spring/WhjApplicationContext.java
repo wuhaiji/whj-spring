@@ -52,13 +52,13 @@ public class WhjApplicationContext {
                 .map(List::of)
                 .orElse(List.empty())
                 .filter(Objects::nonNull)
-                .map(this::replacePath)
                 .flatMap(this::findBeanDefinitionInPath);
         return optionals;
     }
 
     private <T> List<Optional<BeanDefinition<T>>> findBeanDefinitionInPath(String path) {
         List<Optional<BeanDefinition<T>>> optionals = Optional.ofNullable(path)
+                .map(this::replacePath)
                 .map(this::getResourceFromPath)
                 .map(URL::getFile)
                 .map(File::new)
@@ -154,11 +154,17 @@ public class WhjApplicationContext {
     }
 
     private String replacePath(String path) {
-        return path.replace(".", File.separator);
+        return path.replace(".", "/");
     }
 
     private URL getResourceFromPath(String path) {
         return WhjApplicationContext.class.getClassLoader().getResource(path);
+    }
+
+    public static void main(String[] args) {
+        URL resource = WhjApplicationContext.class.getClassLoader().getResource("com/whj/service");
+        assert resource != null;
+        System.out.println(resource.getFile());
     }
 
     @SuppressWarnings("unchecked")
@@ -197,9 +203,11 @@ public class WhjApplicationContext {
             for (Field f : fields) {
                 if (f.isAnnotationPresent(Autowired.class)) {
                     f.setAccessible(true);
-                    f.set(bean, getBean(f.getName()));
+                    Optional<Object> fieldBean = getBean(f.getName());
+                    if(fieldBean.isPresent()){
+                        f.set(bean, fieldBean.get());
+                    }
                 }
-
             }
             // 判断对象是不是实现了 ware接口
             if (bean instanceof BeanNameAware) {

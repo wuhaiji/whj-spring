@@ -14,6 +14,8 @@ public class WhjBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public void postProcessAfterInitialization(String beanName, Object bean) {
-
+        if(beanName.equals("userService")){
+            System.out.println("WhjBeanPostProcessor::postProcessAfterInitialization 发现 userService");
+        }
     }
 }

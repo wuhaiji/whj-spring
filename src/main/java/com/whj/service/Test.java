@@ -10,6 +10,7 @@ public class Test {
         UserService userService = context
                 .<UserService>getBean("userService")
                 .orElseThrow(() -> new RuntimeException("不存在该bean"));
+        System.out.println(userService.beanName);
 
     }
 }
